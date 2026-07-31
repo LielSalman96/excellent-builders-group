@@ -199,21 +199,60 @@ function mountScrollWorld(container, config) {
     window.scrollTo({ top: seg.start + (seg.end - seg.start) * 0.5, behavior: reduce ? 'auto' : 'smooth' });
   }
 
+  // How many clips may stay resident at once. iOS Safari caps how many <video>
+  // elements it will decode concurrently (and how much blob memory it will hold);
+  // past that cap a freshly-created element silently never paints, so the scene is
+  // stuck on its still. Before this budget existed every clip we loaded stayed
+  // loaded, so a phone ran out of decoders around the 4th scene and every scene
+  // after it — entry, foyer, living, kitchen, backyard — showed only the poster.
+  const CLIP_BUDGET = isMobile() ? 3 : 6;
+
+  function unloadClip(s) {
+    const v = s.video;
+    if (!v) return;
+    try { v.pause(); } catch (e) {}
+    try { v.removeAttribute('src'); v.load(); } catch (e) {}   // drop the decoder
+    if (s.objUrl) { try { URL.revokeObjectURL(s.objUrl); } catch (e) {} s.objUrl = null; }
+    try { v.remove(); } catch (e) {}
+    s.video = null; s.hasClip = false; s.ready = false; s.loading = false;
+    s.el.classList.remove('has-clip');   // put the still back until the clip returns
+  }
+
+  // Keep the clips nearest the current scroll position; release the rest so their
+  // decoders are free for the scenes the viewer is actually about to reach. Called
+  // from read(), so it tracks the scroll rather than the load order.
+  function evictClips(ci) {
+    const live = [];
+    for (let i = 0; i < NSEG; i++) if (SEGMENTS[i].video || SEGMENTS[i].loading) live.push(i);
+    if (live.length <= CLIP_BUDGET) return;
+    live.sort((a, b) => Math.abs(a - ci) - Math.abs(b - ci));
+    for (let k = CLIP_BUDGET; k < live.length; k++) {
+      const s = SEGMENTS[live[k]];
+      if (s.loading && !s.video) { s.dropOnArrival = true; continue; }  // in-flight fetch
+      unloadClip(s);
+    }
+  }
+
   function loadClip(s) {
     // Under prefers-reduced-motion we never load the clips at all — the stills stay up
     // and simply cross-dissolve as you scroll. No scrubbed video motion, no decode cost.
-    if (reduce || s.loading || !s.clip) return;
-    s.loading = true;
+    if (reduce || s.loading || s.video || !s.clip) return;
+    s.loading = true; s.dropOnArrival = false;
     // Serve the lighter mobile encode on phones when one was provided.
     const url = (isMobile() && s.clipM) ? s.clipM : s.clip;
     fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('404')))
       .then(blob => {
+        // Scrolled far away while this was downloading — don't spend a decoder on it.
+        if (s.dropOnArrival) { s.loading = false; s.dropOnArrival = false; return; }
         const v = document.createElement('video');
         v.className = 'sw-scene__video';
         v.muted = true; v.playsInline = true; v.preload = 'auto';
         v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
-        v.src = URL.createObjectURL(blob);
-        v.addEventListener('loadedmetadata', () => { s.ready = true; read(); });
+        s.objUrl = URL.createObjectURL(blob);
+        v.src = s.objUrl;
+        // read() refreshes every target first; snapping cur to it stops a reloaded
+        // clip from visibly sweeping in from wherever it was when we released it.
+        v.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
         // Reveal the video (hide the still poster) only once a real frame has
         // painted — on iOS a seeked-but-never-played muted video stays blank, so
         // hiding the still on metadata alone would flash an empty scene.
@@ -229,9 +268,12 @@ function mountScrollWorld(container, config) {
     let ci = 0;
     for (let i = 0; i < NSEG; i++) if (y >= SEGMENTS[i].start) ci = i;
 
+    // Phones get a tighter look-ahead: fewer clips in flight at once means the
+    // decoders stay available for the scene actually on screen.
+    const pre = isMobile() ? 0.9 : 1.6;
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
-      if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
+      if (y > s.start - pre * vh && y < s.end + pre * vh) loadClip(s);
       const local = clamp((y - s.start) / (s.end - s.start), 0, 1);
       s.target = s.linger ? lingerEase(local, s.linger) : local;
       let outside = 0;
@@ -244,6 +286,8 @@ function mountScrollWorld(container, config) {
         s.img.style.transform = `translateX(${stageX - 2}vw) scale(${sc.toFixed(3)})`;
       }
     }
+    // Release whatever fell outside the budget on this pass.
+    evictClips(ci);
 
     // Past the film's end (content continues below the container), fade all the
     // film chrome out so it never overlays — or steals clicks from — that content.
