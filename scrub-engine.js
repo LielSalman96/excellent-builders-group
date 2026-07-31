@@ -150,20 +150,38 @@ function mountScrollWorld(container, config) {
     // iOS keeps a small pool of media elements; creating and destroying one per
     // scene entry exhausts that pool on a fast flick, after which later scenes
     // never paint and the film degrades to stills from that point on.
+    s.el = scene; s.img = img; s.video = null; s.hasClip = false;
+    s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false;
+    s.seekStamp = 0; s.attachedAt = 0; s.retries = 0; s.lastRetryAt = 0;
+    s.vel = makeVel(s);
+    scene.appendChild(s.vel);
+  });
+
+  function makeVel(s) {
     const vel = document.createElement('video');
     vel.className = 'sw-scene__video';
     vel.muted = true; vel.playsInline = true; vel.preload = 'auto';
     vel.setAttribute('muted', ''); vel.setAttribute('playsinline', '');
-    vel.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
-    vel.addEventListener('loadeddata', () => { try { vel.pause(); } catch (e) {} if (userReady) primeVideo(vel); });
-    vel.addEventListener('seeked', () => { s.seekStamp = 0; if (s.video) reveal(s); });
-    scene.appendChild(vel);
-    s.el = scene; s.img = img; s.vel = vel; s.video = null; s.hasClip = false;
-    s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false;
-    s.seekStamp = 0; s.attachedAt = 0; s.retries = 0;
-  });
+    // Guard every callback on s.vel === vel: after a rebuild, events from the
+    // discarded element must not touch the scene's state.
+    vel.addEventListener('loadedmetadata', () => { if (s.vel === vel) { s.ready = true; read(); s.cur = s.target; } });
+    vel.addEventListener('loadeddata', () => { try { vel.pause(); } catch (e) {} if (s.vel === vel && userReady) primeVideo(vel); });
+    vel.addEventListener('seeked', () => { if (s.vel === vel) { s.seekStamp = 0; if (s.video) reveal(s); } });
+    return vel;
+  }
 
-  function reveal(s) { s.el.classList.add('has-clip'); }
+  // WebKit occasionally wedges a media element for good (seeks hang, frames never
+  // present, even after src cycling). Swapping in a brand-new element is the only
+  // reliable cure — done sparingly, on repeated failure, so the element pool
+  // isn't churned in normal scrolling.
+  function rebuildVel(s) {
+    const old = s.vel, fresh = makeVel(s);
+    s.vel = fresh;
+    try { old.replaceWith(fresh); }
+    catch (e) { try { old.remove(); } catch (e2) {} s.el.appendChild(fresh); }
+  }
+
+  function reveal(s) { s.el.classList.add('has-clip'); s.retries = 0; }
 
   // per-section copy / route / nav
   const copies = [], dots = [];
@@ -225,7 +243,7 @@ function mountScrollWorld(container, config) {
   // re-downloading several megabytes — without that, eviction and re-loading would
   // fight each other on every scroll frame and nothing would ever finish loading.
   const CLIP_BUDGET = isMobile() ? 3 : 6;   // simultaneous decoders
-  const BLOB_BUDGET = isMobile() ? 6 : 12;  // downloads we keep in hand
+  const BLOB_BUDGET = isMobile() ? 12 : 12; // downloads we keep in hand (the whole film)
   const NEAR_VH = 2.4;   // release the decoder only once the scene is this far off-screen
 
   function detachVideo(s, keepRetries) {
@@ -439,13 +457,40 @@ function mountScrollWorld(container, config) {
       const neverReady   = !s.ready && s.attachedAt && (now - s.attachedAt > 3000);
       const neverPainted = s.ready && !s.el.classList.contains('has-clip')
                         && s.attachedAt && (now - s.attachedAt > 1500);
-      if ((stuckSeek || neverReady || neverPainted) && s.retries < 4) {
-        s.retries++;
+      // Fast retries first; past 4, keep trying but back off to one attempt every
+      // 4s. A scene the reader is looking at must never be abandoned for good.
+      const canRetry = s.retries < 4 || (now - s.lastRetryAt > 4000);
+      if ((stuckSeek || neverReady || neverPainted) && canRetry) {
+        s.retries++; s.lastRetryAt = now;
         detachVideo(s, true);
+        if (s.retries >= 2) rebuildVel(s);   // second strike: assume the element wedged
         attachVideo(s);
       }
     }
   }, 700);
+
+  // Background warm: once the page settles, quietly pull every remaining clip's
+  // bytes one at a time so a reader who outruns the network still finds each scene
+  // ready the moment they arrive. Bytes only — decoders stay capped by CLIP_BUDGET.
+  let warmStarted = false;
+  function warmAll() {
+    if (warmStarted || reduce) return;
+    warmStarted = true;
+    let wi = 0;
+    const next = () => {
+      while (wi < NSEG && (SEGMENTS[wi].blob || SEGMENTS[wi].loading || !SEGMENTS[wi].clip)) wi++;
+      if (wi >= NSEG) return;
+      const s = SEGMENTS[wi];
+      const url = (isMobile() && s.clipM) ? s.clipM : s.clip;
+      s.loading = true;
+      fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('warm ' + r.status)))
+        .then(b => { s.blob = b; s.loading = false; if (s.wanted) attachVideo(s); setTimeout(next, 250); })
+        .catch(() => { s.loading = false; wi++; setTimeout(next, 1500); });
+    };
+    next();
+  }
+  window.addEventListener('load', () => setTimeout(warmAll, 1200));
+  setTimeout(warmAll, 4000);   // covers the case where `load` fired before mount
 
   // ---- helpers ----
   function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
