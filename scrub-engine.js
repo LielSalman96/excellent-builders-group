@@ -199,67 +199,93 @@ function mountScrollWorld(container, config) {
     window.scrollTo({ top: seg.start + (seg.end - seg.start) * 0.5, behavior: reduce ? 'auto' : 'smooth' });
   }
 
-  // How many clips may stay resident at once. iOS Safari caps how many <video>
-  // elements it will decode concurrently (and how much blob memory it will hold);
-  // past that cap a freshly-created element silently never paints, so the scene is
-  // stuck on its still. Before this budget existed every clip we loaded stayed
-  // loaded, so a phone ran out of decoders around the 4th scene and every scene
-  // after it — entry, foyer, living, kitchen, backyard — showed only the poster.
-  const CLIP_BUDGET = isMobile() ? 3 : 6;
+  // The scarce resource on a phone is video *decoders*, not bytes: iOS Safari only
+  // decodes a few <video> elements at once, and past that cap a newly created one
+  // silently never paints — which is why, with every clip kept alive, a phone ran
+  // out around the 4th scene and everything after it (entry, foyer, living,
+  // kitchen, backyard) stayed frozen on its still.
+  //
+  // So we cap how many clips are *attached* to a decoder, but keep the downloaded
+  // bytes. Re-entering a scene re-attaches from the blob we already hold instead of
+  // re-downloading several megabytes — without that, eviction and re-loading would
+  // fight each other on every scroll frame and nothing would ever finish loading.
+  const CLIP_BUDGET = isMobile() ? 3 : 6;   // simultaneous decoders
+  const BLOB_BUDGET = isMobile() ? 6 : 12;  // downloads we keep in hand
+  const NEAR_VH = 2.4;   // release the decoder only once the scene is this far off-screen
 
-  function unloadClip(s) {
+  function detachVideo(s) {
     const v = s.video;
     if (!v) return;
     try { v.pause(); } catch (e) {}
-    try { v.removeAttribute('src'); v.load(); } catch (e) {}   // drop the decoder
+    try { v.removeAttribute('src'); v.load(); } catch (e) {}   // hand the decoder back
     if (s.objUrl) { try { URL.revokeObjectURL(s.objUrl); } catch (e) {} s.objUrl = null; }
     try { v.remove(); } catch (e) {}
-    s.video = null; s.hasClip = false; s.ready = false; s.loading = false;
-    s.el.classList.remove('has-clip');   // put the still back until the clip returns
+    s.video = null; s.hasClip = false; s.ready = false;
+    s.el.classList.remove('has-clip');   // the still takes over until the clip returns
   }
 
-  // Keep the clips nearest the current scroll position; release the rest so their
-  // decoders are free for the scenes the viewer is actually about to reach. Called
-  // from read(), so it tracks the scroll rather than the load order.
-  function evictClips(ci) {
-    const live = [];
-    for (let i = 0; i < NSEG; i++) if (SEGMENTS[i].video || SEGMENTS[i].loading) live.push(i);
-    if (live.length <= CLIP_BUDGET) return;
-    live.sort((a, b) => Math.abs(a - ci) - Math.abs(b - ci));
-    for (let k = CLIP_BUDGET; k < live.length; k++) {
-      const s = SEGMENTS[live[k]];
-      if (s.loading && !s.video) { s.dropOnArrival = true; continue; }  // in-flight fetch
-      unloadClip(s);
-    }
+  function attachVideo(s) {
+    if (s.video || !s.blob) return;
+    const v = document.createElement('video');
+    v.className = 'sw-scene__video';
+    v.muted = true; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+    s.objUrl = URL.createObjectURL(s.blob);
+    v.src = s.objUrl;
+    // read() refreshes every target first; snapping cur to it stops a re-attached
+    // clip from visibly sweeping in from wherever it was when we released it.
+    v.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
+    // Reveal the video (hide the still poster) only once a real frame has
+    // painted — on iOS a seeked-but-never-played muted video stays blank, so
+    // hiding the still on metadata alone would flash an empty scene.
+    v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
+    v.addEventListener('loadeddata', () => { try { v.pause(); } catch (e) {} if (userReady) primeVideo(v); });
+    s.el.appendChild(v); s.video = v; s.hasClip = true;
   }
 
   function loadClip(s) {
     // Under prefers-reduced-motion we never load the clips at all — the stills stay up
     // and simply cross-dissolve as you scroll. No scrubbed video motion, no decode cost.
-    if (reduce || s.loading || s.video || !s.clip) return;
-    s.loading = true; s.dropOnArrival = false;
+    if (reduce || s.video || !s.clip) return;
+    if (s.blob) { attachVideo(s); return; }   // already downloaded — instant, no network
+    if (s.loading) return;
+    s.loading = true;
     // Serve the lighter mobile encode on phones when one was provided.
     const url = (isMobile() && s.clipM) ? s.clipM : s.clip;
     fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('404')))
       .then(blob => {
-        // Scrolled far away while this was downloading — don't spend a decoder on it.
-        if (s.dropOnArrival) { s.loading = false; s.dropOnArrival = false; return; }
-        const v = document.createElement('video');
-        v.className = 'sw-scene__video';
-        v.muted = true; v.playsInline = true; v.preload = 'auto';
-        v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
-        s.objUrl = URL.createObjectURL(blob);
-        v.src = s.objUrl;
-        // read() refreshes every target first; snapping cur to it stops a reloaded
-        // clip from visibly sweeping in from wherever it was when we released it.
-        v.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
-        // Reveal the video (hide the still poster) only once a real frame has
-        // painted — on iOS a seeked-but-never-played muted video stays blank, so
-        // hiding the still on metadata alone would flash an empty scene.
-        v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
-        v.addEventListener('loadeddata', () => { try { v.pause(); } catch (e) {} if (userReady) primeVideo(v); });
-        s.el.appendChild(v); s.video = v; s.hasClip = true;
+        s.blob = blob; s.loading = false;
+        if (s.wanted) attachVideo(s);   // still on screen? show it. Otherwise keep the bytes.
       }).catch(() => { s.loading = false; });
+  }
+
+  // Called from read() on every scroll pass. `wanted` = inside the load window,
+  // `near` = inside the wider keep window. Because near is much wider than wanted,
+  // a clip has to travel well away before losing its decoder, and a clip that is
+  // still wanted is never evicted — that hysteresis is what stops load/evict thrash.
+  function evictClips(ci) {
+    for (let i = 0; i < NSEG; i++) {
+      const s = SEGMENTS[i];
+      if (s.video && !s.near) detachVideo(s);
+    }
+    const live = [];
+    for (let i = 0; i < NSEG; i++) if (SEGMENTS[i].video) live.push(i);
+    if (live.length > CLIP_BUDGET) {
+      live.sort((a, b) => Math.abs(b - ci) - Math.abs(a - ci));   // furthest first
+      let over = live.length - CLIP_BUDGET;
+      for (let k = 0; k < live.length && over > 0; k++) {
+        const s = SEGMENTS[live[k]];
+        if (s.wanted) continue;      // never evict what we would reload immediately
+        detachVideo(s); over--;
+      }
+    }
+    // Don't sit on every clip's bytes for the whole session either.
+    const held = [];
+    for (let i = 0; i < NSEG; i++) if (SEGMENTS[i].blob && !SEGMENTS[i].video) held.push(i);
+    if (held.length > BLOB_BUDGET) {
+      held.sort((a, b) => Math.abs(b - ci) - Math.abs(a - ci));
+      for (let k = 0; k < held.length - BLOB_BUDGET; k++) SEGMENTS[held[k]].blob = null;
+    }
   }
 
   function read() {
@@ -273,7 +299,9 @@ function mountScrollWorld(container, config) {
     const pre = isMobile() ? 0.9 : 1.6;
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
-      if (y > s.start - pre * vh && y < s.end + pre * vh) loadClip(s);
+      s.wanted = (y > s.start - pre * vh && y < s.end + pre * vh);
+      s.near   = (y > s.start - NEAR_VH * vh && y < s.end + NEAR_VH * vh);
+      if (s.wanted) loadClip(s);
       const local = clamp((y - s.start) / (s.end - s.start), 0, 1);
       s.target = s.linger ? lingerEase(local, s.linger) : local;
       let outside = 0;
