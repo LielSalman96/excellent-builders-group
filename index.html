@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Excellent Builders Group | Custom Home Builder in Encino &amp; Los Angeles</title>
+  <meta name="description" content="Excellent Builders Group is a licensed, bonded and insured general contractor (CSLB #1126591) building custom luxury homes across Greater Los Angeles. Call (424) 402-9815." />
+  <meta property="og:title" content="Excellent Builders Group | From Bare Dirt to Landmark" />
+  <meta property="og:description" content="Watch a luxury home rise from nothing. Custom homes and design-build in Encino & Greater Los Angeles. CSLB #1126591. (424) 402-9815" />
+  <meta property="og:image" content="assets/front_sunset.webp" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root, .sw-root {
+      --sw-bg: #0B0E13;
+      --sw-ink: #F3EFE6;
+      --sw-ink-soft: #B7B1a4;
+      --sw-accent: #C9A566;
+      --sw-font-display: 'Playfair Display', Georgia, serif;
+      --sw-font-body: 'Inter', system-ui, sans-serif;
+      --gold: #C9A566;
+      --silver: #C9CDD3;
+      --bg: #0B0E13;
+      --panel: #12151C;
+      --ink: #F3EFE6;
+      --ink-soft: #B7B1A4;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; }
+    ::selection { background: var(--gold); color: #0B0E13; }
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+    .sw-brand__logo { height: 60px; width: auto; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+
+    /* engine ships light-theme button colors. Repaint them for our dark theme */
+    .sw-topcta { background: var(--gold) !important; color: #0B0E13 !important; box-shadow: 0 6px 22px rgba(201,165,102,.3); transition: filter .2s, transform .2s; }
+    .sw-topcta:hover { filter: brightness(1.07); transform: translateY(-1px); }
+    .sw-btn--primary { background: var(--gold) !important; color: #0B0E13 !important; }
+    .sw-btn--ghost { color: var(--ink) !important; border: 1.5px solid rgba(243,239,230,.45) !important; }
+    .sw-nav__item.is-active { color: #0B0E13 !important; }
+    .sw-copy__tags li { background: rgba(11,14,19,.55) !important; color: var(--gold) !important; border: 1px solid rgba(201,165,102,.5) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+    /* ===== trust badges (fixed, top-right, under the phone button) ===== */
+    .trust {
+      position: fixed; top: 92px; right: 18px; z-index: 640;
+      display: flex; align-items: stretch;
+      background: rgba(11,14,19,.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(201,165,102,.35); border-radius: 12px;
+      padding: 9px 6px; box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    }
+    .trust span {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 0 13px; font-size: 9.5px; font-weight: 600; letter-spacing: .22em;
+      color: var(--ink); text-transform: uppercase; white-space: nowrap;
+    }
+    .trust span + span { border-left: 1px solid rgba(201,165,102,.35); }
+    .trust svg { width: 21px; height: 21px; stroke: var(--gold); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    @media (max-width: 700px) {
+      .trust { top: auto; bottom: 14px; right: 12px; padding: 7px 2px; }
+      .trust span { padding: 0 9px; font-size: 8.5px; }
+      .trust svg { width: 17px; height: 17px; }
+      .sw-hint { display: none !important; }
+      .sw-brand__name { font-size: 13px !important; line-height: 1.25 !important; max-width: 150px; }
+      .sw-brand__logo { height: 46px !important; }
+    }
+
+    /* ============ below-the-film site ============ */
+    .site { position: relative; z-index: 5; background: var(--bg); }
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+    section.block { padding: clamp(76px, 11vh, 132px) 0; }
+    .eyebrow { font-weight: 600; font-size: 12px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); margin: 0 0 18px; }
+    h2.h { font-family: 'Playfair Display', serif; font-weight: 500; font-size: clamp(32px, 4.8vw, 56px); line-height: 1.1; margin: 0 0 18px; color: var(--ink); }
+    h2.h em { font-style: italic; color: var(--gold); }
+    .lead { font-size: clamp(16px, 1.35vw, 18.5px); font-weight: 300; line-height: 1.7; color: var(--ink-soft); max-width: 620px; margin: 0; }
+    .rule { width: 64px; height: 1px; background: linear-gradient(90deg, var(--gold), transparent); border: 0; margin: 26px 0 0; }
+
+    .rv { opacity: 0; transform: translateY(26px); transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); }
+    .rv.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } }
+
+    /* gallery */
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(12px, 1.6vw, 22px); margin-top: clamp(36px, 5vh, 56px); }
+    .card { position: relative; border-radius: 14px; overflow: hidden; background: var(--panel); grid-column: span 6; }
+    .card.w4 { grid-column: span 4; }
+    .card.w8 { grid-column: span 8; }
+    .card img { display: block; width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; transition: transform .8s cubic-bezier(.22,.61,.36,1); }
+    .card:hover img, .card:focus-within img { transform: scale(1.045); }
+    .btn-ghost { display: inline-block; margin-top: 34px; padding: 13px 30px; border-radius: 999px; border: 1.5px solid rgba(201,165,102,.55); color: var(--gold); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; transition: background .25s, color .25s, transform .25s; }
+    .btn-ghost:hover { background: var(--gold); color: #0B0E13; transform: translateY(-2px); }
+    .foot-nav { display: flex; flex-wrap: wrap; gap: 8px 26px; justify-content: center; padding: 0 0 26px; }
+    .foot-nav a { color: var(--ink-soft); text-decoration: none; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; transition: color .25s; }
+    .foot-nav a:hover { color: var(--gold); }
+    .card figcaption { position: absolute; inset: auto 0 0 0; padding: 44px 20px 16px; font-size: 12.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink); background: linear-gradient(180deg, transparent, rgba(7,9,12,.85)); }
+    @media (max-width: 760px) { .card, .card.w4, .card.w8 { grid-column: span 12; } }
+
+    /* services */
+    .svc { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(12px, 1.6vw, 22px); margin-top: clamp(36px, 5vh, 56px); }
+    @media (max-width: 980px) { .svc { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .svc { grid-template-columns: 1fr; } }
+    .svc article { border: 1px solid rgba(201,165,102,.18); background: linear-gradient(180deg, rgba(201,165,102,.05), rgba(201,165,102,.015)); border-radius: 14px; padding: 28px 24px 30px; transition: border-color .3s, transform .3s; }
+    .svc article:hover { border-color: rgba(201,165,102,.5); transform: translateY(-3px); }
+    .svc svg { width: 30px; height: 30px; stroke: var(--gold); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .svc h3 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 20px; margin: 18px 0 10px; letter-spacing: .01em; }
+    .svc p { font-size: 14.5px; font-weight: 300; line-height: 1.65; color: var(--ink-soft); margin: 0; }
+
+    /* process */
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(12px, 1.6vw, 22px); margin-top: clamp(36px, 5vh, 56px); counter-reset: step; padding-left: 0; }
+    @media (max-width: 980px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .steps { grid-template-columns: 1fr; } }
+    .steps li { list-style: none; position: relative; padding: 26px 22px 28px; border-radius: 14px; background: var(--panel); border: 1px solid rgba(255,255,255,.06); }
+    .steps li::before { counter-increment: step; content: counter(step, decimal-leading-zero); font-family: 'Playfair Display', serif; font-size: 36px; font-style: italic; color: rgba(201,165,102,.8); display: block; margin-bottom: 12px; }
+    .steps h3 { font-size: 15.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; margin: 0 0 8px; }
+    .steps p { font-size: 14px; font-weight: 300; line-height: 1.65; color: var(--ink-soft); margin: 0; }
+
+    /* contact */
+    .contact { text-align: center; background: radial-gradient(60% 90% at 50% 110%, rgba(201,165,102,.15), transparent 70%), var(--bg); }
+    .contact .logo-big { width: min(230px, 56vw); height: auto; margin: 0 auto 26px; display: block; }
+    .phone { font-family: 'Playfair Display', serif; font-size: clamp(32px, 5.2vw, 60px); color: var(--ink); text-decoration: none; letter-spacing: .02em; border-bottom: 1px solid rgba(201,165,102,.5); transition: color .3s, border-color .3s; }
+    .phone:hover { color: var(--gold); border-color: var(--gold); }
+    .lic { margin-top: 22px; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); }
+    .lic b { color: var(--gold); font-weight: 600; }
+    .btn { display: inline-block; margin-top: 30px; padding: 16px 40px; min-height: 44px; border-radius: 999px; background: var(--gold); color: #0B0E13; font-weight: 600; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; text-decoration: none; transition: transform .25s, box-shadow .25s; cursor: pointer; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(201,165,102,.35); }
+    footer { padding: 44px 0 58px; border-top: 1px solid rgba(255,255,255,.07); }
+    .foot { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 300; color: #8d8778; }
+    .foot .brandline { display: flex; align-items: center; gap: 12px; }
+    .foot .brandline img { height: 52px; width: auto; filter: brightness(1.5); }
+    .foot .brandline b { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 15px; letter-spacing: .1em; color: var(--ink); text-transform: uppercase; }
+    .foot .cols { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+    .foot a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div id="top"></div>
+  <div id="world"></div>
+
+  <!-- Licensed · Bonded · Insured -->
+  <div class="trust" aria-label="Licensed, bonded and insured. CSLB #1126591">
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 5.5v5c0 4.6 3 8 7 10 4-2 7-5.4 7-10v-5L12 3z"/><circle cx="12" cy="10" r="2.2"/><path d="M8.8 15.5c.6-1.8 1.8-2.7 3.2-2.7s2.6.9 3.2 2.7"/></svg>
+      Licensed
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l1.9 1.3 2.3-.3 1 2.1 2.1 1-.3 2.3 1.3 1.9-1.3 1.9.3 2.3-2.1 1-1 2.1-2.3-.3-1.9 1.3-1.9-1.3-2.3.3-1-2.1-2.1-1 .3-2.3L3.7 12l1.3-1.9-.3-2.3 2.1-1 1-2.1 2.3.3L12 3.2z"/><path d="M9.2 12.2l2 2 3.6-3.9"/></svg>
+      Bonded
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 5.5v5c0 4.6 3 8 7 10 4-2 7-5.4 7-10v-5L12 3z"/><path d="M8.8 12.1l2.2 2.2 4.2-4.5"/></svg>
+      Insured
+    </span>
+  </div>
+
+  <main class="site">
+    <!-- PORTFOLIO -->
+    <section class="block" id="work">
+      <div class="wrap">
+        <p class="eyebrow rv">The Work</p>
+        <h2 class="h rv">Finished means <em>finished.</em></h2>
+        <p class="lead rv">A few more rooms from recent projects, photographed the day we handed over the keys.</p>
+        <hr class="rule rv" />
+        <div class="grid">
+          <figure class="card rv"><img src="assets/living_open.webp" alt="Open-plan living room with glass walls sliding open to the pool terrace at dusk" loading="lazy" /><figcaption>Indoor & Outdoor Living</figcaption></figure>
+          <figure class="card rv"><img src="assets/bedroom.webp" alt="Primary bedroom with corner glass walls facing the sunset" loading="lazy" /><figcaption>Primary Suite</figcaption></figure>
+          <figure class="card rv"><img src="assets/bath.webp" alt="Marble spa bathroom with freestanding tub and glass shower opening to a private garden" loading="lazy" /><figcaption>Spa Bath</figcaption></figure>
+          <figure class="card rv"><img src="assets/closet.webp" alt="Boutique-style walk-in closet with glass wardrobes and marble island" loading="lazy" /><figcaption>Custom Closet</figcaption></figure>
+        </div>
+        <p class="rv" style="text-align:center;"><a class="btn-ghost" href="portfolio.html">View the Full Portfolio</a></p>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="block" id="services">
+      <div class="wrap">
+        <p class="eyebrow rv">What We Do</p>
+        <h2 class="h rv">Four things. Done <em>properly.</em></h2>
+        <hr class="rule rv" />
+        <div class="svc">
+          <article class="rv">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+            <h3>Custom Homes</h3>
+            <p>Ground-up construction on your lot, from grading to final walkthrough. One contract, one accountable team.</p>
+          </article>
+          <article class="rv">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M13 7l3 3"/></svg>
+            <h3>Design + Build</h3>
+            <p>Architecture, engineering and construction under the same roof, so nothing gets lost between the drawings and the job site.</p>
+          </article>
+          <article class="rv">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5l5 5"/><path d="M3 21l6-1 11-11-4-4L5 16l-2 5z"/><path d="M16 3l5 5"/></svg>
+            <h3>Remodels &amp; Additions</h3>
+            <p>Second stories, structural remodels and whole-home transformations that respect what's already standing.</p>
+          </article>
+          <article class="rv">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0"/><path d="M2 22c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0"/><path d="M7 14V6a3 3 0 0 1 6 0"/></svg>
+            <h3>Outdoor Living &amp; Pools</h3>
+            <p>Terraces, fire features and pools designed together with the house, not bolted on after.</p>
+          </article>
+        </div>
+        <p class="rv" style="text-align:center;"><a class="btn-ghost" href="services.html">Explore Our Services</a></p>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="block" id="process">
+      <div class="wrap">
+        <p class="eyebrow rv">How It Works</p>
+        <h2 class="h rv">A build you can actually <em>follow.</em></h2>
+        <hr class="rule rv" />
+        <ol class="steps">
+          <li class="rv"><h3>Walk the Lot</h3><p>We meet on your property, hear what you have in mind, and tell you honestly what it will take.</p></li>
+          <li class="rv"><h3>Design &amp; Permits</h3><p>Drawings you can picture yourself in, engineering that passes review, and a city file we handle so you don't have to.</p></li>
+          <li class="rv"><h3>Construction</h3><p>A supervised site, weekly photo updates, and a schedule we treat like part of the contract.</p></li>
+          <li class="rv"><h3>Keys &amp; After</h3><p>A final walkthrough with everything working, and a builder who still picks up the phone a year later.</p></li>
+        </ol>
+        <p class="rv" style="text-align:center;"><a class="btn-ghost" href="about.html">More About Us</a></p>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="block contact" id="contact">
+      <div class="wrap">
+        <img class="logo-big rv" src="assets/logo.webp" alt="Excellent Builders Group" />
+        <p class="eyebrow rv">Talk To Us</p>
+        <h2 class="h rv">Tell us about your project.</h2>
+        <p class="lead rv" style="margin: 0 auto;">Based in Encino, building across Greater Los Angeles. Call and you'll reach someone who can answer real questions.</p>
+        <p class="rv" style="margin-top: 38px;"><a class="phone" href="tel:+14244029815">(424) 402-9815</a></p>
+        <p class="lic rv">CSLB License <b>#1126591</b> &nbsp;·&nbsp; Bonded &amp; Insured</p>
+        <p class="rv"><a class="btn" href="tel:+14244029815">Call Now</a></p>
+      </div>
+    </section>
+
+    <footer>
+      <nav class="foot-nav" aria-label="Site">
+        <a href="index.html">Home</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="services.html">Services</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <div class="wrap foot">
+        <span class="brandline"><img src="assets/mark.webp" alt="" /><b>Excellent Builders Group</b></span>
+        <span class="cols">
+          <span>Encino, California</span>
+          <span>·</span>
+          <span>CSLB #1126591 · Licensed, Bonded &amp; Insured</span>
+          <span>·</span>
+          <a href="tel:+14244029815">(424) 402-9815</a>
+        </span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="scrub-engine.js"></script>
+  <script>
+    mountScrollWorld(document.getElementById('world'), {
+      brand: { name: 'Excellent Builders Group', href: '#top', logo: 'assets/mark.webp' },
+      cta: { label: '(424) 402-9815', href: 'tel:+14244029815' },
+      hint: 'scroll to break ground',
+      diveScroll: 1.35,
+      crossfade: 0.09,
+      sections: [
+        {
+          id: 'lot', label: 'The Lot',
+          still: 'assets/poster1.webp', stillMobile: 'assets/poster1-m.webp',
+          clip: 'assets/vid/leg1.mp4', clipMobile: 'assets/vid/leg1-m.mp4',
+          accent: '#C0996B', scroll: 1.2,
+          eyebrow: 'Excellent Builders Group · Encino, CA',
+          title: 'Bare dirt. Big plans.',
+          body: 'Every project starts like this: an empty lot, a set of drawings, and a schedule we intend to keep. Scroll to watch this one become a home.',
+          tags: ['CSLB #1126591', 'Bonded & Insured'],
+        },
+        {
+          id: 'foundation', label: 'Foundation',
+          still: 'assets/poster2.webp', stillMobile: 'assets/poster2-m.webp',
+          clip: 'assets/vid/leg2.mp4', clipMobile: 'assets/vid/leg2-m.mp4',
+          accent: '#A8ADB3', scroll: 1.45,
+          eyebrow: 'Phase 01 · Foundation',
+          title: 'Get the bones right.',
+          body: "Engineered footings, inspected steel, concrete poured on schedule. Nobody sees this work once the house is up. It's still the part we're pickiest about.",
+          tags: [],
+        },
+        {
+          id: 'framing', label: 'Framing',
+          still: 'assets/poster3.webp', stillMobile: 'assets/poster3-m.webp',
+          clip: 'assets/vid/leg3.mp4', clipMobile: 'assets/vid/leg3-m.mp4',
+          accent: '#CE945A', scroll: 1.45,
+          eyebrow: 'Phase 02 · Structure',
+          title: 'The house takes shape.',
+          body: 'Straight walls, square corners, lumber checked twice before it goes up. Framing is where good houses are won or lost.',
+          tags: [],
+        },
+        {
+          id: 'reveal', label: 'The Reveal',
+          still: 'assets/poster4.webp', stillMobile: 'assets/poster4-m.webp',
+          clip: 'assets/vid/leg4.mp4', clipMobile: 'assets/vid/leg4-m.mp4',
+          accent: '#C9A566', scroll: 1.85, linger: 0.35,
+          eyebrow: 'Phase 03 · The Reveal',
+          title: 'From survey stakes to this.',
+          body: 'Stone, glass and warm wood where bare dirt used to be. This is what on-time looks like from the street.',
+          tags: ['Stone & glass', 'Custom millwork'],
+        },
+        {
+          id: 'entry', label: 'Entry',
+          still: 'assets/poster5.webp', stillMobile: 'assets/poster5-m.webp',
+          clip: 'assets/vid/leg5.mp4', clipMobile: 'assets/vid/leg5-m.mp4',
+          accent: '#D8B27A', scroll: 1.3,
+          eyebrow: 'Step Inside',
+          title: 'First impressions do the talking.',
+          body: 'Floating steps over still water, and a ten-foot pivot door that swings like it weighs nothing.',
+          tags: [],
+        },
+        {
+          id: 'foyer', label: 'Foyer',
+          still: 'assets/poster6.webp', stillMobile: 'assets/poster6-m.webp',
+          clip: 'assets/vid/leg6.mp4', clipMobile: 'assets/vid/leg6-m.mp4',
+          accent: '#E0C08A', scroll: 1.3,
+          eyebrow: 'The Foyer',
+          title: 'Look up.',
+          body: 'A double-height entry, hand-blown glass overhead, and a staircase that appears to float. This room sets the tone for everything after it.',
+          tags: [],
+        },
+        {
+          id: 'living', label: 'Living',
+          still: 'assets/poster7.webp', stillMobile: 'assets/poster7-m.webp',
+          clip: 'assets/vid/leg7.mp4', clipMobile: 'assets/vid/leg7-m.mp4',
+          accent: '#D9A96A', scroll: 1.45, linger: 0.3,
+          eyebrow: 'The Great Room',
+          title: 'Grand, never cold.',
+          body: 'Twenty-foot ceilings and glass walls that slide away until inside and outside are the same room. Built for parties of forty, and for slow Tuesdays on the couch.',
+          tags: [],
+        },
+        {
+          id: 'kitchen', label: 'Kitchen',
+          still: 'assets/poster8.webp', stillMobile: 'assets/poster8-m.webp',
+          clip: 'assets/vid/leg8.mp4', clipMobile: 'assets/vid/leg8-m.mp4',
+          accent: '#CDA671', scroll: 1.45, linger: 0.3,
+          eyebrow: 'The Kitchen',
+          title: 'Millimeter work.',
+          body: 'Book-matched marble, walnut cabinetry, lighting tuned like a gallery. Kitchens are where we sweat the smallest numbers.',
+          tags: [],
+        },
+        {
+          id: 'finale', label: 'Backyard',
+          still: 'assets/poster9.webp', stillMobile: 'assets/poster9-m.webp',
+          clip: 'assets/vid/leg9.mp4', clipMobile: 'assets/vid/leg9-m.mp4',
+          accent: '#7FB6C9', scroll: 1.9, linger: 0.4,
+          eyebrow: 'Excellent Builders Group',
+          title: 'Your lot could be next.',
+          body: "Call and tell us what you're planning. You'll be talking to a builder, not a sales script.",
+          tags: [],
+          cta: {
+            primary: { label: 'Call (424) 402-9815', href: 'tel:+14244029815' },
+            secondary: { label: 'See more of our work', href: 'portfolio.html' },
+          },
+        },
+      ],
+      connectors: [],
+    });
+
+    const io = new IntersectionObserver((es) => {
+      es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
