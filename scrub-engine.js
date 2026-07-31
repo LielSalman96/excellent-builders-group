@@ -146,9 +146,24 @@ function mountScrollWorld(container, config) {
     const poster = (isMobile() && s.stillM) ? s.stillM : s.still;
     if (poster) img.src = poster;
     scene.appendChild(img); stage.appendChild(scene);
-    s.el = scene; s.img = img; s.video = null; s.hasClip = false;
+    // One persistent <video> per scene, created once and reused for every attach.
+    // iOS keeps a small pool of media elements; creating and destroying one per
+    // scene entry exhausts that pool on a fast flick, after which later scenes
+    // never paint and the film degrades to stills from that point on.
+    const vel = document.createElement('video');
+    vel.className = 'sw-scene__video';
+    vel.muted = true; vel.playsInline = true; vel.preload = 'auto';
+    vel.setAttribute('muted', ''); vel.setAttribute('playsinline', '');
+    vel.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
+    vel.addEventListener('loadeddata', () => { try { vel.pause(); } catch (e) {} if (userReady) primeVideo(vel); });
+    vel.addEventListener('seeked', () => { s.seekStamp = 0; if (s.video) reveal(s); });
+    scene.appendChild(vel);
+    s.el = scene; s.img = img; s.vel = vel; s.video = null; s.hasClip = false;
     s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false;
+    s.seekStamp = 0; s.attachedAt = 0; s.retries = 0;
   });
+
+  function reveal(s) { s.el.classList.add('has-clip'); }
 
   // per-section copy / route / nav
   const copies = [], dots = [];
@@ -213,34 +228,31 @@ function mountScrollWorld(container, config) {
   const BLOB_BUDGET = isMobile() ? 6 : 12;  // downloads we keep in hand
   const NEAR_VH = 2.4;   // release the decoder only once the scene is this far off-screen
 
-  function detachVideo(s) {
+  function detachVideo(s, keepRetries) {
     const v = s.video;
     if (!v) return;
     try { v.pause(); } catch (e) {}
     try { v.removeAttribute('src'); v.load(); } catch (e) {}   // hand the decoder back
     if (s.objUrl) { try { URL.revokeObjectURL(s.objUrl); } catch (e) {} s.objUrl = null; }
-    try { v.remove(); } catch (e) {}
-    s.video = null; s.hasClip = false; s.ready = false;
+    s.video = null; s.hasClip = false; s.ready = false; s.seekStamp = 0; s.attachedAt = 0;
+    if (!keepRetries) s.retries = 0;   // a natural evict earns the scene fresh attempts later
     s.el.classList.remove('has-clip');   // the still takes over until the clip returns
   }
 
   function attachVideo(s) {
     if (s.video || !s.blob) return;
-    const v = document.createElement('video');
-    v.className = 'sw-scene__video';
-    v.muted = true; v.playsInline = true; v.preload = 'auto';
-    v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+    const v = s.vel;   // the persistent element — never recreated (listeners live on it)
     s.objUrl = URL.createObjectURL(s.blob);
     v.src = s.objUrl;
-    // read() refreshes every target first; snapping cur to it stops a re-attached
-    // clip from visibly sweeping in from wherever it was when we released it.
-    v.addEventListener('loadedmetadata', () => { s.ready = true; read(); s.cur = s.target; });
-    // Reveal the video (hide the still poster) only once a real frame has
-    // painted — on iOS a seeked-but-never-played muted video stays blank, so
-    // hiding the still on metadata alone would flash an empty scene.
-    v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
-    v.addEventListener('loadeddata', () => { try { v.pause(); } catch (e) {} if (userReady) primeVideo(v); });
-    s.el.appendChild(v); s.video = v; s.hasClip = true;
+    try { v.load(); } catch (e) {}
+    s.video = v; s.hasClip = true; s.attachedAt = performance.now();
+    // Reveal on the first actually-presented frame. The `seeked` listener alone
+    // misses the case where the first seek lands at the current position (no event),
+    // and a seek stranded by decoder starvation would leave the still up forever.
+    if (v.requestVideoFrameCallback) {
+      v.requestVideoFrameCallback(() => { if (s.video === v && v.getAttribute('src')) reveal(s); });
+    }
+    if (userReady) primeVideo(v);
   }
 
   function loadClip(s) {
@@ -368,7 +380,7 @@ function mountScrollWorld(container, config) {
       s.cur += (s.target - s.cur) * (reduce ? 1 : 0.18);
       const dur = s.video.duration || 1;
       const t = clamp(s.cur, 0, 0.999) * dur;
-      if (Math.abs(s.video.currentTime - t) > eps) { try { s.video.currentTime = t; } catch (e) {} }
+      if (Math.abs(s.video.currentTime - t) > eps) { try { s.video.currentTime = t; s.seekStamp = performance.now(); } catch (e) {} }
     }
     requestAnimationFrame(raf);
   }
@@ -408,6 +420,32 @@ function mountScrollWorld(container, config) {
   window.addEventListener('load', layout);
   layout();
   requestAnimationFrame(raf);
+
+  // Recovery watchdog. Two real-world phone failure modes leave a scene stuck on
+  // its still with no event ever coming to fix it: (1) iOS strands a video mid-seek
+  // when decoders are starved during a fast flick — `seeking` stays true forever and
+  // raf() skips the clip from then on; (2) a clip's fetch dies while the user isn't
+  // scrolling, and loadClip only re-fires on scroll events. Every 700ms this pass
+  // re-requests missing loads and gives any stuck-but-wanted clip a fresh decode
+  // attempt from the bytes we already hold (bounded, so a truly broken clip
+  // gracefully stays a still instead of thrashing).
+  if (!reduce) setInterval(() => {
+    const now = performance.now();
+    for (let i = 0; i < NSEG; i++) {
+      const s = SEGMENTS[i];
+      if (!s.wanted || !s.clip) continue;
+      if (!s.video) { loadClip(s); continue; }
+      const stuckSeek    = s.seekStamp && s.video.seeking && (now - s.seekStamp > 900);
+      const neverReady   = !s.ready && s.attachedAt && (now - s.attachedAt > 3000);
+      const neverPainted = s.ready && !s.el.classList.contains('has-clip')
+                        && s.attachedAt && (now - s.attachedAt > 1500);
+      if ((stuckSeek || neverReady || neverPainted) && s.retries < 4) {
+        s.retries++;
+        detachVideo(s, true);
+        attachVideo(s);
+      }
+    }
+  }, 700);
 
   // ---- helpers ----
   function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
