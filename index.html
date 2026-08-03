@@ -124,6 +124,20 @@
     .lic b { color: var(--gold); font-weight: 600; }
     .btn { display: inline-block; margin-top: 30px; padding: 16px 40px; min-height: 44px; border-radius: 999px; background: var(--gold); color: #0B0E13; font-weight: 600; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; text-decoration: none; transition: transform .25s, box-shadow .25s; cursor: pointer; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(201,165,102,.35); }
+    /* testimonials */
+    .testi { display: grid; grid-template-columns: repeat(5, 1fr); gap: clamp(12px, 1.5vw, 20px); margin-top: clamp(36px, 5vh, 56px); }
+    @media (max-width: 1080px) { .testi { grid-template-columns: repeat(3, 1fr); } .testi .tcard:nth-child(n+4) { display: none; } }
+    @media (max-width: 640px) { .testi { grid-template-columns: 1fr; max-width: 320px; margin-left: auto; margin-right: auto; } .testi .tcard:nth-child(n+4) { display: block; } }
+    .tcard { margin: 0; }
+    .tframe { position: relative; border-radius: 16px; overflow: hidden; background: var(--panel); border: 1px solid rgba(201,165,102,.22); aspect-ratio: 9/16; cursor: pointer; transition: border-color .3s, transform .3s, box-shadow .3s; }
+    .tframe:hover { border-color: rgba(201,165,102,.6); transform: translateY(-3px); box-shadow: 0 16px 44px rgba(0,0,0,.45); }
+    .tframe video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .tplay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, transparent 45%, rgba(7,9,12,.65)); transition: opacity .3s; }
+    .tplay::before { content: ""; width: 64px; height: 64px; border-radius: 50%; background: rgba(201,165,102,.94); box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+    .tplay::after { content: ""; position: absolute; width: 0; height: 0; border-style: solid; border-width: 11px 0 11px 19px; border-color: transparent transparent transparent #0B0E13; margin-left: 5px; }
+    .tframe.playing .tplay { opacity: 0; pointer-events: none; }
+    .tcard figcaption { margin-top: 12px; text-align: center; font-size: 11.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); }
+    .tcard figcaption b { display: block; color: var(--gold); font-weight: 600; margin-bottom: 3px; }
     footer { padding: 44px 0 58px; border-top: 1px solid rgba(255,255,255,.07); }
     .foot { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 300; color: #8d8778; }
     .foot .brandline { display: flex; align-items: center; gap: 12px; }
@@ -216,6 +230,38 @@
           <li class="rv"><h3>Keys &amp; After</h3><p>A final walkthrough with everything working, and a builder who still picks up the phone a year later.</p></li>
         </ol>
         <p class="rv" style="text-align:center;"><a class="btn-ghost" href="about.html">More About Us</a></p>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="block" id="voices">
+      <div class="wrap">
+        <p class="eyebrow rv">In Their Words</p>
+        <h2 class="h rv">Don't take it from us. Take it from the <em>homeowners.</em></h2>
+        <p class="lead rv">Unscripted, on their doorsteps and in their new kitchens — filmed the day we finished, and one a full year later.</p>
+        <hr class="rule rv" />
+        <div class="testi">
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t3.webp" src="assets/vid/testi/t3.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>One Year Later</b>Still Happy · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t5.webp" src="assets/vid/testi/t5.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>ADU Build</b>Homeowner · Job Completion</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t1.webp" src="assets/vid/testi/t1.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Job Completion</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t2.webp" src="assets/vid/testi/t2.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Project Handover</b>Homeowners · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t4.webp" src="assets/vid/testi/t4.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Final Walkthrough</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
 
@@ -367,6 +413,21 @@
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });
     document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+    // Testimonial players: tap to play with sound, one at a time.
+    const tframes = document.querySelectorAll('.tframe');
+    tframes.forEach(fr => {
+      const v = fr.querySelector('video');
+      fr.addEventListener('click', () => {
+        if (v.paused) {
+          tframes.forEach(o => { const ov = o.querySelector('video'); if (ov !== v) { ov.pause(); o.classList.remove('playing'); ov.controls = false; } });
+          v.controls = true; fr.classList.add('playing');
+          v.play().catch(() => {});
+        }
+      });
+      v.addEventListener('pause', () => { if (!v.seeking) { fr.classList.remove('playing'); } });
+      v.addEventListener('ended', () => { fr.classList.remove('playing'); v.controls = false; });
+    });
   </script>
 </body>
 </html>
