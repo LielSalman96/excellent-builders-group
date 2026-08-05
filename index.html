@@ -43,6 +43,36 @@
     .sw-nav__item.is-active { color: #0B0E13 !important; }
     .sw-copy__tags li { background: rgba(11,14,19,.55) !important; color: var(--gold) !important; border: 1px solid rgba(201,165,102,.5) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
+    /* big, centered, impossible-to-miss scroll cue on every screen (engine fades it on first scroll) */
+    .sw-hint {
+      display: flex !important;
+      bottom: 38vh !important;
+      gap: 14px;
+      padding: 22px 34px 24px;
+      background: rgba(11,14,19,.58);
+      border: 1px solid rgba(201,165,102,.55);
+      border-radius: 20px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      font-size: 14.5px !important;
+      font-weight: 600;
+      letter-spacing: .24em !important;
+      color: var(--ink) !important;
+      box-shadow: 0 12px 44px rgba(0,0,0,.5);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .sw-hint i { width: 32px !important; height: 52px !important; border-width: 2.5px !important; border-color: rgba(201,165,102,.85) !important; }
+    .sw-hint::after {
+      content: ""; width: 13px; height: 13px;
+      border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold);
+      transform: rotate(45deg);
+      animation: ebg-drop 1.6s ease-in-out infinite;
+    }
+    @keyframes ebg-drop {
+      0%, 100% { transform: translateY(0) rotate(45deg); opacity: .45; }
+      50% { transform: translateY(8px) rotate(45deg); opacity: 1; }
+    }
+
     /* ===== trust badges (fixed, top-right, under the phone button) ===== */
     .trust {
       position: fixed; top: 92px; right: 18px; z-index: 640;
@@ -62,35 +92,8 @@
       .trust { top: auto; bottom: 14px; right: 12px; padding: 7px 2px; }
       .trust span { padding: 0 9px; font-size: 8.5px; }
       .trust svg { width: 17px; height: 17px; }
-      /* big, centered, impossible-to-miss scroll cue on phones (engine fades it on first scroll) */
-      .sw-hint {
-        display: flex !important;
-        bottom: 40vh !important;
-        gap: 13px;
-        padding: 20px 28px 22px;
-        background: rgba(11,14,19,.58);
-        border: 1px solid rgba(201,165,102,.55);
-        border-radius: 20px;
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        font-size: 13px !important;
-        font-weight: 600;
-        letter-spacing: .22em !important;
-        color: var(--ink) !important;
-        box-shadow: 0 12px 44px rgba(0,0,0,.5);
-        pointer-events: none;
-        white-space: nowrap;
-      }
-      .sw-hint i { width: 30px !important; height: 48px !important; border-width: 2.5px !important; border-color: rgba(201,165,102,.85) !important; }
-      .sw-hint::after {
-        content: ""; width: 13px; height: 13px;
-        border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold);
-        transform: rotate(45deg);
-        animation: ebg-drop 1.6s ease-in-out infinite;
-      }
-      @keyframes ebg-drop {
-        0%, 100% { transform: translateY(0) rotate(45deg); opacity: .45; }
-        50% { transform: translateY(8px) rotate(45deg); opacity: 1; }
-      }
+      .sw-hint { bottom: 40vh !important; padding: 20px 28px 22px; font-size: 13px !important; }
+      .sw-hint i { width: 30px !important; height: 48px !important; }
       .sw-brand__name { font-size: 13px !important; line-height: 1.25 !important; max-width: 150px; }
       .sw-brand__logo { height: 46px !important; }
     }
