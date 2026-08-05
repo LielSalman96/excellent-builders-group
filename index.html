@@ -62,7 +62,35 @@
       .trust { top: auto; bottom: 14px; right: 12px; padding: 7px 2px; }
       .trust span { padding: 0 9px; font-size: 8.5px; }
       .trust svg { width: 17px; height: 17px; }
-      .sw-hint { display: none !important; }
+      /* big, centered, impossible-to-miss scroll cue on phones (engine fades it on first scroll) */
+      .sw-hint {
+        display: flex !important;
+        bottom: 40vh !important;
+        gap: 13px;
+        padding: 20px 28px 22px;
+        background: rgba(11,14,19,.58);
+        border: 1px solid rgba(201,165,102,.55);
+        border-radius: 20px;
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        font-size: 13px !important;
+        font-weight: 600;
+        letter-spacing: .22em !important;
+        color: var(--ink) !important;
+        box-shadow: 0 12px 44px rgba(0,0,0,.5);
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .sw-hint i { width: 30px !important; height: 48px !important; border-width: 2.5px !important; border-color: rgba(201,165,102,.85) !important; }
+      .sw-hint::after {
+        content: ""; width: 13px; height: 13px;
+        border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold);
+        transform: rotate(45deg);
+        animation: ebg-drop 1.6s ease-in-out infinite;
+      }
+      @keyframes ebg-drop {
+        0%, 100% { transform: translateY(0) rotate(45deg); opacity: .45; }
+        50% { transform: translateY(8px) rotate(45deg); opacity: 1; }
+      }
       .sw-brand__name { font-size: 13px !important; line-height: 1.25 !important; max-width: 150px; }
       .sw-brand__logo { height: 46px !important; }
     }
@@ -473,15 +501,6 @@
       ],
       connectors: [],
     });
-
-    // Mobile scroll cue, attached inside scene 1's copy so it never collides with anything
-    const firstCopy = document.querySelector('#world .sw-copy');
-    if (firstCopy) {
-      const cue = document.createElement('div');
-      cue.className = 'ebg-cue';
-      cue.innerHTML = '<i></i><span>Scroll to break ground</span><i></i>';
-      firstCopy.appendChild(cue);
-    }
 
     const io = new IntersectionObserver((es) => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });

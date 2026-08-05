@@ -32,7 +32,7 @@
 
   <main>
     <section class="phero">
-      <div class="bgimg"><img src="assets/build_framing.webp" alt="" /></div>
+      <div class="bgimg"><img src="assets/build_framing.webp" alt="" /><video data-clip="assets/vid/leg3.mp4" data-clip-m="assets/vid/leg3-m.mp4" poster="assets/poster3.webp" muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video></div>
       <div class="wrap">
         <p class="eyebrow rv">Services</p>
         <h1 class="h rv">Five things. Done <em>properly.</em></h1>
@@ -183,6 +183,13 @@
   </footer>
 
   <script>
+    document.querySelectorAll('video[data-clip]').forEach(v => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const phone = matchMedia('(hover: none) and (pointer: coarse)').matches || innerWidth <= 700;
+      v.src = phone ? v.dataset.clipM : v.dataset.clip;
+      v.playbackRate = 0.85;
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    });
     const io = new IntersectionObserver((es) => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });

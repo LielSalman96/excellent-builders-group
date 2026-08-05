@@ -32,7 +32,7 @@
 
   <main>
     <section class="phero">
-      <div class="bgimg"><img src="assets/front_sunset.webp" alt="" /></div>
+      <div class="bgimg"><img src="assets/front_sunset.webp" alt="" /><video data-clip="assets/vid/leg4.mp4" data-clip-m="assets/vid/leg4-m.mp4" poster="assets/poster4.webp" muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video></div>
       <div class="wrap">
         <p class="eyebrow rv">Portfolio</p>
         <h1 class="h rv">Work we put our <em>name</em> on.</h1>
@@ -185,6 +185,38 @@
       </div>
     </section>
 
+    <!-- TESTIMONIALS -->
+    <section class="block" id="voices">
+      <div class="wrap">
+        <p class="eyebrow rv">In Their Words</p>
+        <h2 class="h rv">Don't take it from us. Take it from the <em>homeowners.</em></h2>
+        <p class="lead rv">Unscripted, on their doorsteps and in their new kitchens. Filmed the day we finished, and one a full year later.</p>
+        <hr class="rule rv" />
+        <div class="testi">
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t3.webp" src="assets/vid/testi/t3.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>One Year Later</b>Still Happy · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t5.webp" src="assets/vid/testi/t5.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>ADU Build</b>Homeowner · Job Completion</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t1.webp" src="assets/vid/testi/t1.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Job Completion</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t2.webp" src="assets/vid/testi/t2.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Project Handover</b>Homeowners · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t4.webp" src="assets/vid/testi/t4.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Final Walkthrough</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <section class="block band" id="cta">
       <div class="wrap">
         <p class="eyebrow rv">Excellent Builders Group</p>
@@ -219,10 +251,33 @@
   </footer>
 
   <script>
+    document.querySelectorAll('video[data-clip]').forEach(v => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const phone = matchMedia('(hover: none) and (pointer: coarse)').matches || innerWidth <= 700;
+      v.src = phone ? v.dataset.clipM : v.dataset.clip;
+      v.playbackRate = 0.85;
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    });
     const io = new IntersectionObserver((es) => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });
     document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+    // Testimonial players: tap to play with sound, one at a time.
+    const tframes = document.querySelectorAll('.tframe');
+    tframes.forEach(fr => {
+      const v = fr.querySelector('video');
+      fr.addEventListener('click', () => {
+        if (v.paused) {
+          tframes.forEach(o => { const ov = o.querySelector('video'); if (ov !== v) { ov.pause(); o.classList.remove('playing'); ov.controls = false; } });
+          v.controls = true; fr.classList.add('playing');
+          v.play().catch(() => {});
+        }
+      });
+      v.addEventListener('pause', () => { if (!v.seeking) { fr.classList.remove('playing'); } });
+      v.addEventListener('ended', () => { fr.classList.remove('playing'); v.controls = false; });
+    });
+
   </script>
 </body>
 </html>

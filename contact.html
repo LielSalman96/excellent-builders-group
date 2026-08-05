@@ -32,7 +32,7 @@
 
   <main>
     <section class="phero">
-      <div class="bgimg"><img src="assets/pool_dusk.webp" alt="" /></div>
+      <div class="bgimg"><img src="assets/pool_dusk.webp" alt="" /><video data-clip="assets/vid/leg9.mp4" data-clip-m="assets/vid/leg9-m.mp4" poster="assets/poster9.webp" muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video></div>
       <div class="wrap">
         <p class="eyebrow rv">Contact</p>
         <h1 class="h rv">Talk to a <em>builder.</em></h1>
@@ -48,7 +48,40 @@
         <p class="lic rv">Call or text &nbsp;·&nbsp; CSLB License <b>#1126591</b> &nbsp;·&nbsp; Bonded &amp; Insured</p>
         <p class="rv" style="margin-top: 14px;"><a href="mailto:info@ExcBuilders.com" style="color: var(--gold, #C9A566); text-decoration: none; border-bottom: 1px solid rgba(201,165,102,.5); font-size: 17px; letter-spacing: .04em;">info@ExcBuilders.com</a></p>
         <p class="rv"><a class="btn" href="tel:+14244029815">Call Now</a></p>
+        <p class="rv" style="margin-top: 18px;"><a class="btn-ghost" href="index.html">Watch the Build Film</a></p>
         <p class="lead rv" style="margin: 34px auto 0; text-align: center;">Based in Encino, California. Building across Greater Los Angeles.</p>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="block" id="voices">
+      <div class="wrap">
+        <p class="eyebrow rv">In Their Words</p>
+        <h2 class="h rv">Don't take it from us. Take it from the <em>homeowners.</em></h2>
+        <p class="lead rv">Unscripted, on their doorsteps and in their new kitchens. Filmed the day we finished, and one a full year later.</p>
+        <hr class="rule rv" />
+        <div class="testi">
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t3.webp" src="assets/vid/testi/t3.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>One Year Later</b>Still Happy · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t5.webp" src="assets/vid/testi/t5.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>ADU Build</b>Homeowner · Job Completion</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t1.webp" src="assets/vid/testi/t1.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Job Completion</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t2.webp" src="assets/vid/testi/t2.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Project Handover</b>Homeowners · Los Angeles</figcaption>
+          </figure>
+          <figure class="tcard rv">
+            <div class="tframe"><video preload="none" playsinline poster="assets/testi/t4.webp" src="assets/vid/testi/t4.mp4"></video><div class="tplay" aria-hidden="true"></div></div>
+            <figcaption><b>Final Walkthrough</b>Homeowner · Los Angeles</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
 
@@ -113,10 +146,33 @@
   </footer>
 
   <script>
+    document.querySelectorAll('video[data-clip]').forEach(v => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const phone = matchMedia('(hover: none) and (pointer: coarse)').matches || innerWidth <= 700;
+      v.src = phone ? v.dataset.clipM : v.dataset.clip;
+      v.playbackRate = 0.85;
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    });
     const io = new IntersectionObserver((es) => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });
     document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+    // Testimonial players: tap to play with sound, one at a time.
+    const tframes = document.querySelectorAll('.tframe');
+    tframes.forEach(fr => {
+      const v = fr.querySelector('video');
+      fr.addEventListener('click', () => {
+        if (v.paused) {
+          tframes.forEach(o => { const ov = o.querySelector('video'); if (ov !== v) { ov.pause(); o.classList.remove('playing'); ov.controls = false; } });
+          v.controls = true; fr.classList.add('playing');
+          v.play().catch(() => {});
+        }
+      });
+      v.addEventListener('pause', () => { if (!v.seeking) { fr.classList.remove('playing'); } });
+      v.addEventListener('ended', () => { fr.classList.remove('playing'); v.controls = false; });
+    });
+
   </script>
 </body>
 </html>
